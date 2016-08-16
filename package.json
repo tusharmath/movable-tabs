@@ -60,6 +60,8 @@
   "devDependencies": {
     "ava": "^0.16.0",
     "babel-cli": "^6.11.4",
+    "babel-core": "^6.13.2",
+    "babel-loader": "^6.2.4",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.11.5",
     "babel-register": "^6.11.6",
     "coveralls": "^2.11.12",
@@ -78,6 +80,10 @@
     "webpack-dev-server": "^1.14.1"
   },
   "dependencies": {
-    "hyperscript-helpers": "^3.0.0"
+    "flex-jss": "^1.0.1",
+    "hyperscript": "^1.4.7",
+    "jss": "^5.4.0",
+    "jss-preset-default": "^0.2.0",
+    "ramda": "^0.22.1"
   }
 }

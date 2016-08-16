@@ -3,11 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <title>Demo</title>
+    <meta name='viewport'
+          content='width=device-width, initial-scale=1, user-scalable=no'/>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+    </style>
 </head>
 <body>
-<div id="container">
-    Hello World
+<script src="main.js"></script>
+<div>
+    <x-tab content=''>
+        <x-tab-header>
+            <x-tab-item>alpha</x-tab-item>
+            <x-tab-item>bravo</x-tab-item>
+            <x-tab-item>charlie</x-tab-item>
+        </x-tab-header>
+        <x-tab-content>
+            <section>A</section>
+            <section>B</section>
+            <section>C</section>
+        </x-tab-content>
+    </x-tab>
 </div>
-<script src="component.js"></script>
+
 </body>
 </html>
