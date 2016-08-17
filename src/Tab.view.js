@@ -11,7 +11,7 @@ const mapI = R.addIndex(R.map)
 export const createPanelContainer = ({$}) => {
   const width = `${$.__navItems.length * 100}%`
   return (
-    <div className='pane-container' style={{width}}>
+    <div className='pane-container animated' style={{width}}>
       {$.__paneItems}
     </div>
   )
@@ -40,6 +40,7 @@ export default ({$}) => {
       </div>
       <div className='pane'
            ontouchstart={$.__onTouchStart}
+           ontouchmove={$.__onTouchMove}
            ontouchend={$.__onTouchEnd}
       >
         {paneContainerEL}

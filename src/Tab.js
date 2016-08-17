@@ -48,17 +48,23 @@ export default class Tab extends HTMLElement {
   }
 
   __bind () {
-    const methods = ['__onNavClick', '__onTouchStart', '__onTouchEnd']
+    const methods = ['__onNavClick', '__onTouchStart', '__onTouchMove', '__onTouchEnd']
     bindMethods(this, methods)
   }
 
   __onTouchStart (ev) {
     this.__startX = touchClientX(ev)
+    this.__disablePaneAnimation()
   }
 
   __onTouchEnd (ev) {
     this.__endX = touchClientX(ev)
     this.__updateSelected()
+    this.__enablePaneAnimation()
+  }
+
+  __onTouchMove (ev) {
+    this.__moveX = touchClientX(ev)
   }
 
   __updateSelected () {
@@ -137,5 +143,13 @@ export default class Tab extends HTMLElement {
      * @private
      */
     this.__dimensions = this.getBoundingClientRect()
+  }
+
+  __enablePaneAnimation () {
+    this.__view.paneContainerEL.classList.add('animated')
+  }
+
+  __disablePaneAnimation () {
+    this.__view.paneContainerEL.classList.remove('animated')
   }
 }
