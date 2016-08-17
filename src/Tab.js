@@ -69,11 +69,13 @@ export default class Tab extends HTMLElement {
 
     /**
      * Get Initial Data
+     * @private
      */
     Object.assign(this, getData(this))
 
     /**
      * Create view
+     * @private
      */
     this.__view = view({$: this})
 
@@ -85,6 +87,7 @@ export default class Tab extends HTMLElement {
 
     /**
      * Get Dimensions
+     * @private
      */
     this.__dimensions = this.getBoundingClientRect()
   }
