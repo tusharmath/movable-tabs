@@ -15,6 +15,9 @@ import createStyleTag from './lib/createStyleTag'
 import bindMethods from './lib/bindMethods'
 import wrapElements from './lib/wrapElements'
 import translateX from './lib/translateX'
+import touchClientX from './lib/touchClientX'
+import numberSign from './lib/numberSign'
+import inRange from './lib/inRange'
 
 const jss = new Jss(preset())
 const styleSheets = createStyleTag(jss, style)
@@ -33,6 +36,9 @@ const getPaneItems = R.compose(
 const getData = R.applySpec({
   __navItems: getNavItems,
   __selectedId: R.always(0),
+  __startX: R.always(null),
+  __endX: R.always(null),
+  __moveX: R.always(null),
   __paneItems: getPaneItems
 })
 
@@ -42,7 +48,30 @@ export default class Tab extends HTMLElement {
   }
 
   __bind () {
-    bindMethods(this, ['__onNavClick'])
+    const methods = ['__onNavClick', '__onTouchStart', '__onTouchEnd']
+    bindMethods(this, methods)
+  }
+
+  __onTouchStart (ev) {
+    this.__startX = touchClientX(ev)
+  }
+
+  __onTouchEnd (ev) {
+    this.__endX = touchClientX(ev)
+    this.__updateSelected()
+  }
+
+  __updateSelected () {
+    const diff = this.__startX - this.__endX
+    const direction = numberSign(diff)
+    const selectedId = this.__selectedId + direction
+    const threshold = 0.20 * this.__dimensions.width
+    const count = this.__navItems.length
+    if (Math.abs(diff) > threshold && direction !== 0 && inRange(-1, count, selectedId)) {
+      this.__selectedId = selectedId
+      this.__showSelectedPane()
+      this.__updateSlider()
+    }
   }
 
   __onNavClick (id) {
@@ -78,7 +107,7 @@ export default class Tab extends HTMLElement {
     /**
      * Bind handlers
      */
-    this.__bind(['__onNavClick'])
+    this.__bind()
 
     /**
      * Create ShadowRoot

@@ -38,7 +38,10 @@ export default ({$}) => {
         <ul className='nav'>{navListEL}</ul>
         {sliderEL}
       </div>
-      <div className='pane'>
+      <div className='pane'
+           ontouchstart={$.__onTouchStart}
+           ontouchend={$.__onTouchEnd}
+      >
         {paneContainerEL}
       </div>
     </div>
