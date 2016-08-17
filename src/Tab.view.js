@@ -42,5 +42,5 @@ export default ({$}) => {
         {paneContainerEL}
       </div>
     </div>
-  return {children, sliderEL, navListEL}
+  return {children, sliderEL, navListEL, paneContainerEL}
 }

@@ -14,6 +14,7 @@ import * as R from 'ramda'
 import createStyleTag from './lib/createStyleTag'
 import bindMethods from './lib/bindMethods'
 import wrapElements from './lib/wrapElements'
+import translateX from './lib/translateX'
 
 const jss = new Jss(preset())
 const styleSheets = createStyleTag(jss, style)
@@ -36,7 +37,9 @@ const getData = R.applySpec({
 })
 
 export default class Tab extends HTMLElement {
-  static get tagName () { return 'x-tab'.toUpperCase() }
+  static get tagName () {
+    return 'x-tab'.toUpperCase()
+  }
 
   __bind () {
     bindMethods(this, ['__onNavClick'])
@@ -47,11 +50,18 @@ export default class Tab extends HTMLElement {
     this.__selectedId = id
     this.__updateSlider()
     this.__activateSelectedNavItem()
+    this.__showSelectedPane()
+  }
+
+  __showSelectedPane () {
+    const width = this.__dimensions.width
+    const x = width * this.__selectedId
+    this.__view.paneContainerEL.style.transform = translateX(-x)
   }
 
   __updateSlider () {
     const width = this.__dimensions.width / this.__navItems.length
-    this.__view.sliderEL.style.transform = `translateX(${width * this.__selectedId}px)`
+    this.__view.sliderEL.style.transform = translateX(width * this.__selectedId)
   }
 
   __deactivateSelectedNavItem () {
