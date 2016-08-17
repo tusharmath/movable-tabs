@@ -2,6 +2,7 @@
  * Created by imamudin.naseem on 16/08/16.
  */
 'use strict'
+const webpack = require('webpack')
 
 module.exports = {
   entry: ['./src/main.js'],
@@ -21,6 +22,9 @@ module.exports = {
         loader: 'babel'
       }
     ]
-  }
+  },
+  plugins: [new webpack.ProvidePlugin({
+    h: 'hyperscript'
+  })]
 
 }

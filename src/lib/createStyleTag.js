@@ -3,6 +3,5 @@
  */
 
 'use strict'
-import h from 'hyperscript'
 
-export default (jss, style) => h('style', jss.createStyleSheet(style, {named: false}).toString())
+export default (jss, style) => <style>{jss.createStyleSheet(style, {named: false}).toString()}</style>
