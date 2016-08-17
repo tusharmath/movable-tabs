@@ -24,13 +24,19 @@ const getTabItems = R.compose(
   R.head,
   findChildrenOfType('X-TAB-HEADER')
 )
+const getSections = R.compose(
+  R.prop('children'),
+  R.head,
+  findChildrenOfType('X-TAB-CONTENT')
+)
 
 export class Tab extends HTMLElement {
   createdCallback () {
     const shadow = this.createShadowRoot()
     const tabItems = getTabItems(this)
+    const sections = R.map(x => h('li', x.innerHTML), getSections(this))
     shadow.appendChild(h('style', styleSheets))
-    shadow.appendChild(view({tabItems}))
+    shadow.appendChild(view({tabItems, sections}))
   }
 }
 
