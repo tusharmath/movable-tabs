@@ -19,7 +19,16 @@ test('findChildrenOfType', t => {
       {tagName: 'small', id: 9}
     ]
   }
-  t.deepEqual(findChildrenOfType({tagName: 'small'}, node), [{tagName: 'small', id: 9}])
-  t.deepEqual(findChildrenOfType({tagName: 'div'}, node), [{tagName: 'div', id: 1},{tagName: 'div', id: 2},{tagName: 'div', id: 4},{tagName: 'div', id: 6}])
-  t.deepEqual(findChildrenOfType({tagName: 'li'}, node), [{tagName: 'li', id: 5},{tagName: 'li', id: 8}])
+  t.deepEqual(findChildrenOfType({tagName: 'small'}, node), [{
+    tagName: 'small',
+    id: 9
+  }])
+  t.deepEqual(findChildrenOfType({tagName: 'div'}, node), [{
+    tagName: 'div',
+    id: 1
+  }, {tagName: 'div', id: 2}, {tagName: 'div', id: 4}, {tagName: 'div', id: 6}])
+  t.deepEqual(findChildrenOfType({tagName: 'li'}, node), [{
+    tagName: 'li',
+    id: 5
+  }, {tagName: 'li', id: 8}])
 })
