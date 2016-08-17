@@ -13,6 +13,7 @@ import findChildrenOfType from './lib/findChildrenOfType'
 import * as R from 'ramda'
 import createStyleTag from './lib/createStyleTag'
 import bindMethods from './lib/bindMethods'
+import wrapElements from './lib/wrapElements'
 
 const jss = new Jss(preset())
 const styleSheets = createStyleTag(jss, style)
@@ -22,9 +23,16 @@ const getNavItems = R.compose(
   findChildrenOfType(TabPane)
 )
 
+const getPaneItems = R.compose(
+  R.map(wrapElements('.pane-item')),
+  R.pluck('children'),
+  findChildrenOfType(TabPane)
+)
+
 const getData = R.applySpec({
   __navItems: getNavItems,
-  __selectedId: R.always(0)
+  __selectedId: R.always(0),
+  __paneItems: getPaneItems
 })
 
 export default class Tab extends HTMLElement {

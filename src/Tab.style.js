@@ -5,6 +5,7 @@
 'use strict'
 
 import * as F from 'flex-jss'
+import pane from './Pane.style'
 
 export default {
   '.movable-tabs': {
@@ -35,6 +36,7 @@ export default {
         width: 'calc(100%/3)',
         transition: 'transform 100ms ease-in'
       }
-    }
+    },
+    '& .pane': pane
   }
 }

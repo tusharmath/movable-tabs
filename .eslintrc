@@ -2,6 +2,9 @@
 	"extends": [
 		"standard"
 	],
+	"globals": {
+		"HTMLElement": true
+	},
 	"env": {
 		"node": true
 	}
