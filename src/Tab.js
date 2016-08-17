@@ -38,7 +38,7 @@ const getData = R.applySpec({
   __selectedId: R.always(0),
   __startX: R.always(null),
   __endX: R.always(null),
-  __moveX: R.always(null),
+  __moveX: R.always(0),
   __paneItems: getPaneItems
 })
 
@@ -64,7 +64,9 @@ export default class Tab extends HTMLElement {
   }
 
   __onTouchMove (ev) {
-    this.__moveX = touchClientX(ev)
+    const clientX = touchClientX(ev)
+    this.__moveX = clientX
+    this.__translatePane()
   }
 
   __updateSelected () {
@@ -77,6 +79,8 @@ export default class Tab extends HTMLElement {
       this.__selectedId = selectedId
       this.__showSelectedPane()
       this.__updateSlider()
+    } else {
+      this.__showSelectedPane()
     }
   }
 
@@ -151,5 +155,11 @@ export default class Tab extends HTMLElement {
 
   __disablePaneAnimation () {
     this.__view.paneContainerEL.classList.remove('animated')
+  }
+
+  __translatePane () {
+    const currentX = -this.__selectedId * this.__dimensions.width
+    const x = currentX + (this.__moveX - this.__startX)
+    this.__view.paneContainerEL.style.transform = translateX(x)
   }
 }
