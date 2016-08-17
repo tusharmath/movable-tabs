@@ -9,14 +9,11 @@ import R from 'ramda'
 
 const hc = R.curryN(2, h)
 
-export default ({tabItems, sections}) => h('div.movable-tabs',
+export default ({navItems}) => h('div.movable-tabs',
   h('div.header',
     h('ul.nav',
-      R.map(hc('li'), tabItems)
+      R.map(hc('li'), navItems)
     ),
     h('div.slider')
-  ),
-  h('ul.content',
-    sections
   )
 )

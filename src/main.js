@@ -4,8 +4,8 @@
 
 'use strict'
 
-import {Tab, TabItem, TabHeader, TabContent} from './MovableTabs'
-document.registerElement('x-tab', Tab)
-document.registerElement('x-tab-header', TabHeader)
-document.registerElement('x-tab-content', TabContent)
-document.registerElement('x-tab-item', TabItem)
+import Tab from './Tab'
+import TabPane from './TabPane'
+import registerComponents from './lib/registerComponents'
+
+registerComponents(document, [TabPane, Tab])

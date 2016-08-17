@@ -15,21 +15,15 @@
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
     </style>
+    <script src="main.js"></script>
 </head>
 <body>
-<script src="main.js"></script>
+
 <div>
-    <x-tab content=''>
-        <x-tab-header>
-            <x-tab-item>alpha</x-tab-item>
-            <x-tab-item>bravo</x-tab-item>
-            <x-tab-item>charlie</x-tab-item>
-        </x-tab-header>
-        <x-tab-content>
-            <section>A</section>
-            <section>B</section>
-            <section>C</section>
-        </x-tab-content>
+    <x-tab>
+        <x-tab-pane title='ALPHA'>Alpha content</x-tab-pane>
+        <x-tab-pane title='BRAVO'>Bravo Content</x-tab-pane>
+        <x-tab-pane title='CHARLIE'>Charlie Content</x-tab-pane>
     </x-tab>
 </div>
 
