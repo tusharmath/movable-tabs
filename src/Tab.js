@@ -56,6 +56,7 @@ export default class Tab extends HTMLElement {
   __onTouchStart (ev) {
     this.__startX = touchClientX(ev)
     this.__disablePaneAnimation()
+    this.__allocateOwnLayer()
   }
 
   __onTouchEnd (ev) {
@@ -63,6 +64,7 @@ export default class Tab extends HTMLElement {
     this.__updateSelected()
     this.__enablePaneAnimation()
     this.__stopAnimationFrame()
+    this.__deAllocateOwnLayer()
   }
 
   __onTouchMove (ev) {
@@ -183,5 +185,13 @@ export default class Tab extends HTMLElement {
 
   __updateAnimation () {
     this.__translatePane()
+  }
+
+  __allocateOwnLayer () {
+    this.__view.paneContainerEL.classList.add('transformable')
+  }
+
+  __deAllocateOwnLayer () {
+    this.__view.paneContainerEL.classList.remove('transformable')
   }
 }

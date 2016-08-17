@@ -14,6 +14,9 @@ export default {
     '&.animated': {
       transition: 'transform 100ms ease-in'
     },
+    '&.transformable': {
+      willChange: 'transform'
+    },
     '& .pane-item': {
       extend: F.spread
     }
