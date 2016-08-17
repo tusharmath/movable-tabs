@@ -1,0 +1,8 @@
+import * as R from 'ramda'
+/**
+ * Created by tushar.mathur on 17/08/16.
+ */
+
+'use strict'
+
+export default R.curry((obj, funcs) => R.forEach((f) => (obj[f] = obj[f].bind(obj)), funcs))

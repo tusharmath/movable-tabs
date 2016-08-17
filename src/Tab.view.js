@@ -7,13 +7,16 @@
 import h from 'hyperscript'
 import R from 'ramda'
 
-const hc = R.curryN(2, h)
+const mapI = R.addIndex(R.map)
 
-export default ({navItems}) => h('div.movable-tabs',
-  h('div.header',
-    h('ul.nav',
-      R.map(hc('li'), navItems)
-    ),
-    h('div.slider')
+export default ({$}) => {
+  const sliderEL = h('div.slider')
+  const navListEL = mapI((k, i) => h('li', {onclick: R.partial($.__onNavClick, [i])}, k), $.__navItems)
+  const DOM = h('div.movable-tabs',
+    h('div.header',
+      h('ul.nav', navListEL),
+      sliderEL
+    )
   )
-)
+  return {DOM, sliderEL, navListEL}
+}

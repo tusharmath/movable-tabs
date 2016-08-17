@@ -31,7 +31,8 @@ export default {
       '& .slider': {
         height: '3px',
         backgroundColor: '#FFF',
-        width: 'calc(100%/3)'
+        width: 'calc(100%/3)',
+        transition: 'transform 100ms ease-in'
       }
     }
   }
