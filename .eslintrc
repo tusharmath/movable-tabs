@@ -2,10 +2,8 @@
 	"extends": [
 		"standard"
 	],
-	"globals": {
-		"HTMLElement": true
-	},
 	"env": {
-		"node": true
+		"node": true,
+		"browser": true
 	}
 }

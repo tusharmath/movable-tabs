@@ -12,7 +12,7 @@ export default {
   '& .pane-container': {
     extend: F.row,
     '&.animated': {
-      transition: 'transform 100ms ease-in',
+      transition: 'transform 100ms ease-in'
     },
     '& .pane-item': {
       extend: F.spread

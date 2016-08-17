@@ -38,7 +38,8 @@ const getData = R.applySpec({
   __selectedId: R.always(0),
   __startX: R.always(null),
   __endX: R.always(null),
-  __moveX: R.always(0),
+  __moveX: R.always(null),
+  __animationFrame: R.always(null),
   __paneItems: getPaneItems
 })
 
@@ -61,12 +62,13 @@ export default class Tab extends HTMLElement {
     this.__endX = touchClientX(ev)
     this.__updateSelected()
     this.__enablePaneAnimation()
+    this.__stopAnimationFrame()
   }
 
   __onTouchMove (ev) {
     const clientX = touchClientX(ev)
     this.__moveX = clientX
-    this.__translatePane()
+    this.__startAnimationFrame()
   }
 
   __updateSelected () {
@@ -161,5 +163,25 @@ export default class Tab extends HTMLElement {
     const currentX = -this.__selectedId * this.__dimensions.width
     const x = currentX + (this.__moveX - this.__startX)
     this.__view.paneContainerEL.style.transform = translateX(x)
+  }
+
+  __startAnimationFrame () {
+    if (this.__animationFrame) return
+    const update = () => {
+      this.__animationFrame = requestAnimationFrame(() => {
+        this.__updateAnimation()
+        update()
+      })
+    }
+    update()
+  }
+
+  __stopAnimationFrame () {
+    cancelAnimationFrame(this.__animationFrame)
+    this.__animationFrame = null
+  }
+
+  __updateAnimation () {
+    this.__translatePane()
   }
 }
