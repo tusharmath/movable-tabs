@@ -23,6 +23,7 @@ export default {
           color: 'rgb(242, 174, 174)',
           textTransform: 'uppercase',
           padding: '15px 5px',
+          transition: 'color 100ms ease-in',
           '&.active': {
             color: '#FFF'
           }

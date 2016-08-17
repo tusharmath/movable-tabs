@@ -23,15 +23,22 @@ const getNavItems = R.compose(
 )
 
 const getData = R.applySpec({
-  navItems: getNavItems
+  __navItems: getNavItems,
+  __selectedId: R.always(0)
 })
 
 export default class Tab extends HTMLElement {
   static get tagName () { return 'x-tab'.toUpperCase() }
 
+  __bind () {
+    bindMethods(this, ['__onNavClick'])
+  }
+
   __onNavClick (id) {
+    this.__deactivateSelectedNavItem()
     this.__selectedId = id
     this.__updateSlider()
+    this.__activateSelectedNavItem()
   }
 
   __updateSlider () {
@@ -39,11 +46,21 @@ export default class Tab extends HTMLElement {
     this.__view.sliderEL.style.transform = `translateX(${width * this.__selectedId}px)`
   }
 
+  __deactivateSelectedNavItem () {
+    const el = this.__view.navListEL[this.__selectedId]
+    el.classList.remove('active')
+  }
+
+  __activateSelectedNavItem () {
+    const el = this.__view.navListEL[this.__selectedId]
+    el.classList.add('active')
+  }
+
   createdCallback () {
     /**
      * Bind handlers
      */
-    bindMethods(this, ['__onNavClick'])
+    this.__bind(['__onNavClick'])
 
     /**
      * Create ShadowRoot
@@ -51,9 +68,9 @@ export default class Tab extends HTMLElement {
     const shadow = this.createShadowRoot()
 
     /**
-     * Get Attributes
+     * Get Initial Data
      */
-    this.__navItems = getData(this).navItems
+    Object.assign(this, getData(this))
 
     /**
      * Create view
@@ -64,7 +81,7 @@ export default class Tab extends HTMLElement {
      * Render View for the first time
      */
     shadow.appendChild(styleSheets)
-    shadow.appendChild(this.__view.DOM)
+    shadow.appendChild(this.__view.children)
 
     /**
      * Get Dimensions
