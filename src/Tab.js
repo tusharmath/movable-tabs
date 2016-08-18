@@ -21,6 +21,7 @@ import inRange from './lib/inRange'
 import removeClass from './lib/removeClass'
 import AnimationFrame from './lib/AnimationFrame'
 import addClass from './lib/addClass'
+import setTranslateX from './lib/setTranslateX'
 
 const jss = new Jss(preset())
 const styleSheets = createStyleTag(jss, style)
@@ -127,18 +128,18 @@ export default class Tab extends HTMLElement {
   __showSelectedPane () {
     const width = this.__dimensions.width
     const x = width * this.__selectedId
-    this.__view.paneContainerEL.style.transform = translateX(-x)
+    setTranslateX(this.__view.paneContainerEL, translateX(-x))
   }
 
   __translateSlider () {
     const currentX = this.__dimensions.width * this.__selectedId / this.__navItems.length
     const x = currentX + (this.__startX - this.__moveX) / this.__navItems.length
-    this.__view.sliderEL.style.transform = translateX(x)
+    setTranslateX(this.__view.sliderEL, x)
   }
 
   __updateSlider () {
     const width = this.__dimensions.width / this.__navItems.length
-    this.__view.sliderEL.style.transform = translateX(width * this.__selectedId)
+    setTranslateX(this.__view.sliderEL, width * this.__selectedId)
   }
 
   __deactivateSelectedNavItem () {
@@ -190,7 +191,7 @@ export default class Tab extends HTMLElement {
   __translatePane () {
     const currentX = -this.__selectedId * this.__dimensions.width
     const x = currentX + (this.__moveX - this.__startX)
-    this.__view.paneContainerEL.style.transform = translateX(x)
+    setTranslateX(this.__view.paneContainerEL, x)
   }
 
   __updateAnimation () {
