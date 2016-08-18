@@ -61,10 +61,12 @@ export default class Tab extends HTMLElement {
 
   __onTouchEnd (ev) {
     this.__endX = touchClientX(ev)
+    this.__deactivateSelectedNavItem()
     this.__updateSelected()
     this.__enablePaneAnimation()
     this.__stopAnimationFrame()
     this.__deAllocateOwnLayer()
+    this.__activateSelectedNavItem()
   }
 
   __onTouchMove (ev) {
