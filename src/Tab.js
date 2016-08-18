@@ -47,8 +47,7 @@ const methods = [
   '__onNavClick',
   '__onTouchEnd',
   '__onTouchMove',
-  '__onTouchStart',
-  '__translateElements'
+  '__onTouchStart'
 ]
 const getData = R.applySpec({
   __navItems: getNavItems,
@@ -63,6 +62,10 @@ const calcResetPaneX = (width, id) => -width * id
 const calcTranslateSliderX = (width, id, count, startX, moveX) => (width * id + startX - moveX) / count
 const calcResetSliderX = (width, count, id) => width / count * id
 const calcTranslatePaneX = (id, width, moveX, startX) => -id * width + moveX - startX
+const isMovable = (startX, moveX, id, count, width) => {
+  const currentX = width * id + startX - moveX
+  return inRange(0, width * (count - 1), currentX)
+}
 
 export default class Tab extends HTMLElement {
   static get tagName () {
@@ -83,7 +86,15 @@ export default class Tab extends HTMLElement {
 
   __onTouchEnd (ev) {
     this.__endX = touchClientX(ev)
-    this.__updateSelected()
+    const diff = this.__startX - this.__endX
+    const direction = numberSign(diff)
+    const selectedId = this.__selectedId + direction
+    const threshold = 0.20 * this.__width
+    if (Math.abs(diff) > threshold && direction !== 0 && isMovable(this.__startX, this.__moveX, this.__selectedId, this.__count, this.__width)) {
+      removeActive(this.__selectedEL)
+      this.__selectedId = selectedId
+      addActive(this.__selectedEL)
+    }
     AnimationFrame.stopAF(this.__animationFrame)
     tearDownElements(this.__elements)
     setTranslateX(this.__view.paneContainerEL, calcResetPaneX(this.__width, this.__selectedId))
@@ -91,9 +102,13 @@ export default class Tab extends HTMLElement {
   }
 
   __onTouchMove (ev) {
-    this.__moveX = touchClientX(ev)
-    if (this.__isMovable()) {
-      AnimationFrame.startAF(this.__animationFrame, this.__translateElements)
+    const moveX = touchClientX(ev)
+    if (isMovable(this.__startX, moveX, this.__selectedId, this.__count, this.__width)) {
+      this.__moveX = moveX
+      AnimationFrame.startAF(this.__animationFrame, () => {
+        setTranslateX(this.__view.sliderEL, calcTranslateSliderX(this.__width, this.__selectedId, this.__count, this.__startX, this.__moveX))
+        setTranslateX(this.__view.paneContainerEL, calcTranslatePaneX(this.__selectedId, this.__width, this.__moveX, this.__startX))
+      })
     }
   }
 
@@ -102,18 +117,6 @@ export default class Tab extends HTMLElement {
     const count = this.__count
     const Movable = R.compose(inRange(-1, count), R.add(this.__selectedId), numberSign)
     return Movable(diff)
-  }
-
-  __updateSelected () {
-    const diff = this.__startX - this.__endX
-    const direction = numberSign(diff)
-    const selectedId = this.__selectedId + direction
-    const threshold = 0.20 * this.__width
-    if (Math.abs(diff) > threshold && direction !== 0 && this.__isMovable()) {
-      removeActive(this.__selectedEL)
-      this.__selectedId = selectedId
-      addActive(this.__selectedEL)
-    }
   }
 
   __onNavClick (id) {
@@ -164,10 +167,5 @@ export default class Tab extends HTMLElement {
      * @private
      */
     this.__dimensions = this.getBoundingClientRect()
-  }
-
-  __translateElements () {
-    setTranslateX(this.__view.sliderEL, calcTranslateSliderX(this.__width, this.__selectedId, this.__count, this.__startX, this.__moveX))
-    setTranslateX(this.__view.paneContainerEL, calcTranslatePaneX(this.__selectedId, this.__width, this.__moveX, this.__startX))
   }
 }
