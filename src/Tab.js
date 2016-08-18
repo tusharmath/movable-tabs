@@ -74,7 +74,16 @@ export default class Tab extends HTMLElement {
   __onTouchMove (ev) {
     const clientX = touchClientX(ev)
     this.__moveX = clientX
-    this.__startAnimationFrame()
+    if (this.__isMovable()) {
+      this.__startAnimationFrame()
+    }
+  }
+
+  __isMovable () {
+    const diff = this.__startX - this.__moveX
+    const count = this.__navItems.length
+    const Movable = R.compose(inRange(-1, count), R.add(this.__selectedId), numberSign)
+    return Movable(diff)
   }
 
   __updateSelected () {
@@ -106,11 +115,13 @@ export default class Tab extends HTMLElement {
     const x = width * this.__selectedId
     this.__view.paneContainerEL.style.transform = translateX(-x)
   }
+
   __translateSlider () {
-    const currentX =  this.__dimensions.width * this.__selectedId / this.__navItems.length
+    const currentX = this.__dimensions.width * this.__selectedId / this.__navItems.length
     const x = currentX + (this.__startX - this.__moveX) / this.__navItems.length
     this.__view.sliderEL.style.transform = translateX(x)
   }
+
   __updateSlider () {
     const width = this.__dimensions.width / this.__navItems.length
     this.__view.sliderEL.style.transform = translateX(width * this.__selectedId)
