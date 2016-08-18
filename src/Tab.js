@@ -21,6 +21,7 @@ import removeClass from './lib/removeClass'
 import AnimationFrame from './lib/AnimationFrame'
 import addClass from './lib/addClass'
 import setTranslateX from './lib/setTranslateX'
+import toBetweenRange from './lib/toBetweenRange'
 
 const jss = new Jss(preset())
 const styleSheets = createStyleTag(jss, style)
@@ -51,19 +52,18 @@ const methods = [
 ]
 const getData = R.applySpec({
   __navItems: getNavItems,
-  __selectedId: R.always(0),
-  __startX: R.always(null),
-  __endX: R.always(null),
-  __moveX: R.always(null),
+  selected: R.always(0),
+  startX: R.always(0),
+  moveX: R.always(0),
   __animationFrame: AnimationFrame.createAF,
   __paneItems: getPaneItems
 })
-const calcResetPaneX = (width, id) => -width * id
-const calcTranslateSliderX = (width, id, count, startX, moveX) => (width * id + startX - moveX) / count
-const calcResetSliderX = (width, count, id) => width / count * id
-const calcTranslatePaneX = (id, width, moveX, startX) => -id * width + moveX - startX
-const isMovable = (startX, moveX, id, count, width) => {
-  const currentX = width * id + startX - moveX
+const calcResetPaneX = ({width, selected}) => -width * selected
+const calcTranslateSliderX = ({width, selected, count, startX, moveX}) => (width * selected + startX - moveX) / count
+const calcResetSliderX = ({width, count, selected}) => width / count * selected
+const calcTranslatePaneX = ({selected, width, moveX, startX}) => -selected * width + moveX - startX
+const isMovable = ({startX, moveX, selected, count, width}) => {
+  const currentX = width * selected + startX - moveX
   return inRange(0, width * (count - 1), currentX)
 }
 
@@ -80,58 +80,51 @@ export default class Tab extends HTMLElement {
   }
 
   __onTouchStart (ev) {
-    this.__startX = touchClientX(ev)
+    this.startX = touchClientX(ev)
     setupElements(this.__elements)
   }
 
   __onTouchEnd (ev) {
-    this.__endX = touchClientX(ev)
-    const diff = this.__startX - this.__endX
+    const diff = this.startX - touchClientX(ev)
     const direction = numberSign(diff)
-    const selectedId = this.__selectedId + direction
-    const threshold = 0.20 * this.__width
-    if (Math.abs(diff) > threshold && direction !== 0 && isMovable(this.__startX, this.__moveX, this.__selectedId, this.__count, this.__width)) {
+    const selectedId = toBetweenRange(0, this.count - 1, this.selected + direction)
+    const threshold = 0.20 * this.width
+    if (Math.abs(diff) > threshold && this.selected !== selectedId) {
       removeActive(this.__selectedEL)
-      this.__selectedId = selectedId
+      this.selected = selectedId
       addActive(this.__selectedEL)
     }
     AnimationFrame.stopAF(this.__animationFrame)
     tearDownElements(this.__elements)
-    setTranslateX(this.__view.paneContainerEL, calcResetPaneX(this.__width, this.__selectedId))
-    setTranslateX(this.__view.sliderEL, calcResetSliderX(this.__width, this.__count, this.__selectedId))
+    setTranslateX(this.__view.paneContainerEL, calcResetPaneX(this))
+    setTranslateX(this.__view.sliderEL, calcResetSliderX(this))
   }
 
   __onTouchMove (ev) {
     const moveX = touchClientX(ev)
-    if (isMovable(this.__startX, moveX, this.__selectedId, this.__count, this.__width)) {
-      this.__moveX = moveX
+    const {startX, selected, count, width} = this
+    if (isMovable({startX, moveX, selected, count, width})) {
+      this.moveX = moveX
       AnimationFrame.startAF(this.__animationFrame, () => {
-        setTranslateX(this.__view.sliderEL, calcTranslateSliderX(this.__width, this.__selectedId, this.__count, this.__startX, this.__moveX))
-        setTranslateX(this.__view.paneContainerEL, calcTranslatePaneX(this.__selectedId, this.__width, this.__moveX, this.__startX))
+        setTranslateX(this.__view.sliderEL, calcTranslateSliderX(this))
+        setTranslateX(this.__view.paneContainerEL, calcTranslatePaneX(this))
       })
     }
   }
 
-  __isMovable () {
-    const diff = this.__startX - this.__moveX
-    const count = this.__count
-    const Movable = R.compose(inRange(-1, count), R.add(this.__selectedId), numberSign)
-    return Movable(diff)
-  }
-
   __onNavClick (id) {
     removeActive(this.__selectedEL)
-    this.__selectedId = id
+    this.selected = id
     addActive(this.__selectedEL)
-    setTranslateX(this.__view.sliderEL, calcResetSliderX(this.__width, this.__count, this.__selectedId))
-    setTranslateX(this.__view.paneContainerEL, calcResetPaneX(this.__width, this.__selectedId))
+    setTranslateX(this.__view.sliderEL, calcResetSliderX(this))
+    setTranslateX(this.__view.paneContainerEL, calcResetPaneX(this))
   }
 
-  get __selectedEL () { return this.__view.navListEL[this.__selectedId] }
+  get __selectedEL () { return this.__view.navListEL[this.selected] }
 
-  get __width () { return this.__dimensions.width }
+  get width () { return this.__dimensions.width }
 
-  get __count () { return this.__navItems.length }
+  get count () { return this.__navItems.length }
 
   createdCallback () {
     /**
