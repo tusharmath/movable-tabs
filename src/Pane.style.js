@@ -11,7 +11,12 @@ export default {
   overflow: 'hidden',
   '& .pane-container': {
     extend: F.row,
-    transition: 'transform 100ms ease-in',
+    '&.animated': {
+      transition: 'transform 100ms ease-in'
+    },
+    '&.transformable': {
+      willChange: 'transform'
+    },
     '& .pane-item': {
       extend: F.spread
     }
