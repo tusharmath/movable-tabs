@@ -14,7 +14,6 @@ import * as R from 'ramda'
 import createStyleTag from './lib/createStyleTag'
 import bindMethods from './lib/bindMethods'
 import wrapElements from './lib/wrapElements'
-import translateX from './lib/translateX'
 import touchClientX from './lib/touchClientX'
 import numberSign from './lib/numberSign'
 import inRange from './lib/inRange'
@@ -95,7 +94,7 @@ export default class Tab extends HTMLElement {
 
   __isMovable () {
     const diff = this.__startX - this.__moveX
-    const count = this.__navItems.length
+    const count = this.__count
     const Movable = R.compose(inRange(-1, count), R.add(this.__selectedId), numberSign)
     return Movable(diff)
   }
@@ -106,11 +105,11 @@ export default class Tab extends HTMLElement {
     const selectedId = this.__selectedId + direction
     const threshold = 0.20 * this.__dimensions.width
     if (Math.abs(diff) > threshold && direction !== 0 && this.__isMovable()) {
-      this.__deactivateSelectedNavItem()
+      removeActive(this.__selectedEL)
       this.__selectedId = selectedId
       this.__showSelectedPane()
       this.__updateSlider()
-      this.__activateSelectedNavItem()
+      addActive(this.__selectedEL)
     } else {
       this.__showSelectedPane()
       this.__updateSlider()
@@ -118,39 +117,35 @@ export default class Tab extends HTMLElement {
   }
 
   __onNavClick (id) {
-    this.__deactivateSelectedNavItem()
+    removeActive(this.__selectedEL)
     this.__selectedId = id
     this.__updateSlider()
-    this.__activateSelectedNavItem()
+    addActive(this.__selectedEL)
     this.__showSelectedPane()
   }
 
   __showSelectedPane () {
-    const width = this.__dimensions.width
+    const width = this.__width
     const x = width * this.__selectedId
-    setTranslateX(this.__view.paneContainerEL, translateX(-x))
+    setTranslateX(this.__view.paneContainerEL, -x)
   }
 
   __translateSlider () {
-    const currentX = this.__dimensions.width * this.__selectedId / this.__navItems.length
-    const x = currentX + (this.__startX - this.__moveX) / this.__navItems.length
+    const currentX = this.__width * this.__selectedId / this.__count
+    const x = currentX + (this.__startX - this.__moveX) / this.__count
     setTranslateX(this.__view.sliderEL, x)
   }
 
   __updateSlider () {
-    const width = this.__dimensions.width / this.__navItems.length
+    const width = this.__width / this.__count
     setTranslateX(this.__view.sliderEL, width * this.__selectedId)
   }
 
-  __deactivateSelectedNavItem () {
-    const el = this.__view.navListEL[this.__selectedId]
-    removeActive(el)
-  }
+  get __selectedEL () { return this.__view.navListEL[this.__selectedId] }
 
-  __activateSelectedNavItem () {
-    const el = this.__view.navListEL[this.__selectedId]
-    addActive(el)
-  }
+  get __width () { return this.__dimensions.width }
+
+  get __count () { return this.__navItems.length }
 
   createdCallback () {
     /**
