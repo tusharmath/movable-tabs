@@ -35,5 +35,6 @@ export default class AnimationFrame {
 
   __stop () {
     cancelAnimationFrame(this.__frame)
+    this.__frame = null
   }
 }
