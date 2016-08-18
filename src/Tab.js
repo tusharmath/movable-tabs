@@ -91,11 +91,12 @@ export default class Tab extends HTMLElement {
     const direction = numberSign(diff)
     const selectedId = this.__selectedId + direction
     const threshold = 0.20 * this.__dimensions.width
-    const count = this.__navItems.length
-    if (Math.abs(diff) > threshold && direction !== 0 && inRange(-1, count, selectedId)) {
+    if (Math.abs(diff) > threshold && direction !== 0 && this.__isMovable()) {
+      this.__deactivateSelectedNavItem()
       this.__selectedId = selectedId
       this.__showSelectedPane()
       this.__updateSlider()
+      this.__activateSelectedNavItem()
     } else {
       this.__showSelectedPane()
       this.__updateSlider()
