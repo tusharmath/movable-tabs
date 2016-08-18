@@ -18,6 +18,8 @@ import translateX from './lib/translateX'
 import touchClientX from './lib/touchClientX'
 import numberSign from './lib/numberSign'
 import inRange from './lib/inRange'
+import removeClass from './lib/removeClass'
+import addClass from './lib/addClass'
 
 const jss = new Jss(preset())
 const styleSheets = createStyleTag(jss, style)
@@ -25,12 +27,17 @@ const getNavItems = R.compose(
   R.map(R.path(['attributes', 'title', 'value'])),
   findChildrenOfType(TabPane)
 )
-
 const getPaneItems = R.compose(
   R.map(wrapElements('.pane-item')),
   R.pluck('children'),
   findChildrenOfType(TabPane)
 )
+const addAnimatedCSS = addClass('animated')
+const removeAnimatedCSS = removeClass('animated')
+const addTransformableCSS = addClass('transformable')
+const removeTransformableCSS = removeClass('transformable')
+const addActive = addClass('active')
+const removeActive = removeClass('active')
 
 const getData = R.applySpec({
   __navItems: getNavItems,
@@ -54,20 +61,20 @@ export default class Tab extends HTMLElement {
 
   __onTouchStart (ev) {
     this.__startX = touchClientX(ev)
-    this.__disablePaneAnimation('paneContainerEL')
-    this.__disablePaneAnimation('sliderEL')
-    this.__allocateOwnLayer('paneContainerEL')
-    this.__allocateOwnLayer('sliderEL')
+    addTransformableCSS(this.__view.paneContainerEL)
+    addTransformableCSS(this.__view.sliderEL)
+    removeAnimatedCSS(this.__view.paneContainerEL)
+    removeAnimatedCSS(this.__view.sliderEL)
   }
 
   __onTouchEnd (ev) {
     this.__endX = touchClientX(ev)
     this.__updateSelected()
-    this.__enablePaneAnimation('paneContainerEL')
-    this.__enablePaneAnimation('sliderEL')
     this.__stopAnimationFrame()
-    this.__deAllocateOwnLayer('paneContainerEL')
-    this.__deAllocateOwnLayer('sliderEL')
+    removeTransformableCSS(this.__view.paneContainerEL)
+    removeTransformableCSS(this.__view.sliderEL)
+    addAnimatedCSS(this.__view.paneContainerEL)
+    addAnimatedCSS(this.__view.sliderEL)
   }
 
   __onTouchMove (ev) {
@@ -129,12 +136,12 @@ export default class Tab extends HTMLElement {
 
   __deactivateSelectedNavItem () {
     const el = this.__view.navListEL[this.__selectedId]
-    el.classList.remove('active')
+    removeActive(el)
   }
 
   __activateSelectedNavItem () {
     const el = this.__view.navListEL[this.__selectedId]
-    el.classList.add('active')
+    addActive(el)
   }
 
   createdCallback () {
@@ -173,14 +180,6 @@ export default class Tab extends HTMLElement {
     this.__dimensions = this.getBoundingClientRect()
   }
 
-  __enablePaneAnimation (element) {
-    this.__view[element].classList.add('animated')
-  }
-
-  __disablePaneAnimation (element) {
-    this.__view[element].classList.remove('animated')
-  }
-
   __translatePane () {
     const currentX = -this.__selectedId * this.__dimensions.width
     const x = currentX + (this.__moveX - this.__startX)
@@ -206,13 +205,5 @@ export default class Tab extends HTMLElement {
   __updateAnimation () {
     this.__translateSlider()
     this.__translatePane()
-  }
-
-  __allocateOwnLayer (element) {
-    this.__view[element].classList.add('transformable')
-  }
-
-  __deAllocateOwnLayer (element) {
-    this.__view[element].classList.remove('transformable')
   }
 }
