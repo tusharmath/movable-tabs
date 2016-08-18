@@ -61,20 +61,22 @@ export default class Tab extends HTMLElement {
 
   __onTouchStart (ev) {
     this.__startX = touchClientX(ev)
-    addTransformableCSS(this.__view.paneContainerEL)
-    addTransformableCSS(this.__view.sliderEL)
-    removeAnimatedCSS(this.__view.paneContainerEL)
-    removeAnimatedCSS(this.__view.sliderEL)
+    const {paneContainerEL, sliderEL} = this.__view
+    addTransformableCSS(paneContainerEL)
+    addTransformableCSS(sliderEL)
+    removeAnimatedCSS(paneContainerEL)
+    removeAnimatedCSS(sliderEL)
   }
 
   __onTouchEnd (ev) {
+    const {paneContainerEL, sliderEL} = this.__view
     this.__endX = touchClientX(ev)
     this.__updateSelected()
     this.__stopAnimationFrame()
-    removeTransformableCSS(this.__view.paneContainerEL)
-    removeTransformableCSS(this.__view.sliderEL)
-    addAnimatedCSS(this.__view.paneContainerEL)
-    addAnimatedCSS(this.__view.sliderEL)
+    removeTransformableCSS(paneContainerEL)
+    removeTransformableCSS(sliderEL)
+    addAnimatedCSS(paneContainerEL)
+    addAnimatedCSS(sliderEL)
   }
 
   __onTouchMove (ev) {
