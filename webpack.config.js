@@ -3,6 +3,7 @@
  */
 'use strict'
 const webpack = require('webpack')
+const DashboardPlugin = require('webpack-dashboard/plugin')
 
 module.exports = {
   entry: ['./src/main.js'],
@@ -23,8 +24,11 @@ module.exports = {
       }
     ]
   },
-  plugins: [new webpack.ProvidePlugin({
-    h: 'hyperscript'
-  })]
+  plugins: [
+    new DashboardPlugin(),
+    new webpack.ProvidePlugin({
+      h: 'hyperscript'
+    })
+  ]
 
 }
