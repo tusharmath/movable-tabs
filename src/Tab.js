@@ -19,6 +19,7 @@ import touchClientX from './lib/touchClientX'
 import numberSign from './lib/numberSign'
 import inRange from './lib/inRange'
 import removeClass from './lib/removeClass'
+import AnimationFrame from './lib/AnimationFrame'
 import addClass from './lib/addClass'
 
 const jss = new Jss(preset())
@@ -45,7 +46,7 @@ const getData = R.applySpec({
   __startX: R.always(null),
   __endX: R.always(null),
   __moveX: R.always(null),
-  __animationFrame: R.always(null),
+  __animationFrame: AnimationFrame.create,
   __paneItems: getPaneItems
 })
 
@@ -55,7 +56,13 @@ export default class Tab extends HTMLElement {
   }
 
   __bind () {
-    const methods = ['__onNavClick', '__onTouchStart', '__onTouchMove', '__onTouchEnd']
+    const methods = [
+      '__onNavClick',
+      '__onTouchEnd',
+      '__onTouchMove',
+      '__onTouchStart',
+      '__updateAnimation'
+    ]
     bindMethods(this, methods)
   }
 
@@ -72,7 +79,7 @@ export default class Tab extends HTMLElement {
     const {paneContainerEL, sliderEL} = this.__view
     this.__endX = touchClientX(ev)
     this.__updateSelected()
-    this.__stopAnimationFrame()
+    AnimationFrame.stop(this.__animationFrame)
     removeTransformableCSS(paneContainerEL)
     removeTransformableCSS(sliderEL)
     addAnimatedCSS(paneContainerEL)
@@ -83,7 +90,7 @@ export default class Tab extends HTMLElement {
     const clientX = touchClientX(ev)
     this.__moveX = clientX
     if (this.__isMovable()) {
-      this.__startAnimationFrame()
+      AnimationFrame.start(this.__animationFrame, this.__updateAnimation)
     }
   }
 
@@ -186,22 +193,6 @@ export default class Tab extends HTMLElement {
     const currentX = -this.__selectedId * this.__dimensions.width
     const x = currentX + (this.__moveX - this.__startX)
     this.__view.paneContainerEL.style.transform = translateX(x)
-  }
-
-  __startAnimationFrame () {
-    if (this.__animationFrame) return
-    const update = () => {
-      this.__animationFrame = requestAnimationFrame(() => {
-        this.__updateAnimation()
-        update()
-      })
-    }
-    update()
-  }
-
-  __stopAnimationFrame () {
-    cancelAnimationFrame(this.__animationFrame)
-    this.__animationFrame = null
   }
 
   __updateAnimation () {
