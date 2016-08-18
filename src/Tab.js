@@ -34,7 +34,7 @@ const getPaneItems = R.compose(
   findChildrenOfType(TabPane)
 )
 
-const getData = R.applySpec({
+const initialData = R.applySpec({
   __navItems: getNavItems,
   __selectedId: R.always(0),
   __startX: R.always(null),
@@ -50,7 +50,13 @@ export default class Tab extends HTMLElement {
   }
 
   __bind () {
-    const methods = ['__onNavClick', '__onTouchStart', '__onTouchMove', '__onTouchEnd', '__updateAnimation']
+    const methods = [
+      '__onNavClick',
+      '__onTouchEnd',
+      '__onTouchMove',
+      '__onTouchStart',
+      '__updateAnimation'
+    ]
     bindMethods(this, methods)
   }
 
@@ -135,7 +141,7 @@ export default class Tab extends HTMLElement {
      * Get Initial Data
      * @private
      */
-    Object.assign(this, getData(this))
+    Object.assign(this, initialData(this))
 
     /**
      * Create view
