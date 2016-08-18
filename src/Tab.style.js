@@ -38,8 +38,7 @@ export default {
       },
       '& .slider': {
         height: '3px',
-        backgroundColor: '#FFF',
-        width: 'calc(100%/3)'
+        backgroundColor: '#FFF'
       }
     },
     '& .pane': pane

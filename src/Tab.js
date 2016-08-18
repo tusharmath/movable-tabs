@@ -21,7 +21,6 @@ import inRange from './lib/inRange'
 
 const jss = new Jss(preset())
 const styleSheets = createStyleTag(jss, style)
-
 const getNavItems = R.compose(
   R.map(R.path(['attributes', 'title', 'value'])),
   findChildrenOfType(TabPane)
