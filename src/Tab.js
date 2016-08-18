@@ -33,10 +33,14 @@ const getPaneItems = R.compose(
   R.pluck('children'),
   findChildrenOfType(TabPane)
 )
-const addAnimatedCSS = addClass('animated')
-const removeAnimatedCSS = removeClass('animated')
-const addTransformableCSS = addClass('transformable')
-const removeTransformableCSS = removeClass('transformable')
+const setupElements = R.juxt([
+  R.forEach(addClass('transformable')),
+  R.forEach(removeClass('animated'))
+])
+const tearDownElements = R.juxt([
+  R.forEach(removeClass('transformable')),
+  R.forEach(addClass('animated'))
+])
 const addActive = addClass('active')
 const removeActive = removeClass('active')
 
@@ -46,7 +50,7 @@ const getData = R.applySpec({
   __startX: R.always(null),
   __endX: R.always(null),
   __moveX: R.always(null),
-  __animationFrame: AnimationFrame.create,
+  __animationFrame: AnimationFrame.createAF,
   __paneItems: getPaneItems
 })
 
@@ -69,28 +73,22 @@ export default class Tab extends HTMLElement {
   __onTouchStart (ev) {
     this.__startX = touchClientX(ev)
     const {paneContainerEL, sliderEL} = this.__view
-    addTransformableCSS(paneContainerEL)
-    addTransformableCSS(sliderEL)
-    removeAnimatedCSS(paneContainerEL)
-    removeAnimatedCSS(sliderEL)
+    setupElements([paneContainerEL, sliderEL])
   }
 
   __onTouchEnd (ev) {
     const {paneContainerEL, sliderEL} = this.__view
     this.__endX = touchClientX(ev)
     this.__updateSelected()
-    AnimationFrame.stop(this.__animationFrame)
-    removeTransformableCSS(paneContainerEL)
-    removeTransformableCSS(sliderEL)
-    addAnimatedCSS(paneContainerEL)
-    addAnimatedCSS(sliderEL)
+    AnimationFrame.stopAF(this.__animationFrame)
+    tearDownElements([paneContainerEL, sliderEL])
   }
 
   __onTouchMove (ev) {
     const clientX = touchClientX(ev)
     this.__moveX = clientX
     if (this.__isMovable()) {
-      AnimationFrame.start(this.__animationFrame, this.__updateAnimation)
+      AnimationFrame.startAF(this.__animationFrame, this.__updateAnimation)
     }
   }
 
