@@ -66,6 +66,13 @@ const isMovable = ({startX, moveX, selected, count, width}) => {
   const currentX = width * selected + startX - moveX
   return inRange(0, width * (count - 1), currentX)
 }
+const getCurrentSelectedNav = ({startX, endX, selected, width, count}) => {
+  const diff = startX - endX
+  const direction = numberSign(diff)
+  const newSelected = toBetweenRange(0, count - 1, selected + direction)
+  const threshold = 0.20 * width
+  return Math.abs(diff) > threshold ? newSelected : selected
+}
 
 export default class Tab extends HTMLElement {
   static get tagName () {
@@ -79,21 +86,21 @@ export default class Tab extends HTMLElement {
     return [paneContainerEL, sliderEL]
   }
 
+  __switchNav (selectedId) {
+    if (this.selected === selectedId) return
+    removeActive(this.__selectedEL)
+    this.selected = selectedId
+    addActive(this.__selectedEL)
+  }
+
   __onTouchStart (ev) {
     this.startX = touchClientX(ev)
     setupElements(this.__elements)
   }
 
   __onTouchEnd (ev) {
-    const diff = this.startX - touchClientX(ev)
-    const direction = numberSign(diff)
-    const selectedId = toBetweenRange(0, this.count - 1, this.selected + direction)
-    const threshold = 0.20 * this.width
-    if (Math.abs(diff) > threshold && this.selected !== selectedId) {
-      removeActive(this.__selectedEL)
-      this.selected = selectedId
-      addActive(this.__selectedEL)
-    }
+    this.endX = touchClientX(ev)
+    this.__switchNav(getCurrentSelectedNav(this))
     AnimationFrame.stopAF(this.__animationFrame)
     tearDownElements(this.__elements)
     setTranslateX(this.__view.paneContainerEL, calcResetPaneX(this))
@@ -113,9 +120,7 @@ export default class Tab extends HTMLElement {
   }
 
   __onNavClick (id) {
-    removeActive(this.__selectedEL)
-    this.selected = id
-    addActive(this.__selectedEL)
+    this.__switchNav(id)
     setTranslateX(this.__view.sliderEL, calcResetSliderX(this))
     setTranslateX(this.__view.paneContainerEL, calcResetPaneX(this))
   }
