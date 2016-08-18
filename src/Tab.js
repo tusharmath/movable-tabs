@@ -55,16 +55,20 @@ export default class Tab extends HTMLElement {
 
   __onTouchStart (ev) {
     this.__startX = touchClientX(ev)
-    this.__disablePaneAnimation()
-    this.__allocateOwnLayer()
+    this.__disablePaneAnimation('paneContainerEL')
+    this.__disablePaneAnimation('sliderEL')
+    this.__allocateOwnLayer('paneContainerEL')
+    this.__allocateOwnLayer('sliderEL')
   }
 
   __onTouchEnd (ev) {
     this.__endX = touchClientX(ev)
     this.__updateSelected()
-    this.__enablePaneAnimation()
+    this.__enablePaneAnimation('paneContainerEL')
+    this.__enablePaneAnimation('sliderEL')
     this.__stopAnimationFrame()
-    this.__deAllocateOwnLayer()
+    this.__deAllocateOwnLayer('paneContainerEL')
+    this.__deAllocateOwnLayer('sliderEL')
   }
 
   __onTouchMove (ev) {
@@ -85,6 +89,7 @@ export default class Tab extends HTMLElement {
       this.__updateSlider()
     } else {
       this.__showSelectedPane()
+      this.__updateSlider()
     }
   }
 
@@ -101,7 +106,11 @@ export default class Tab extends HTMLElement {
     const x = width * this.__selectedId
     this.__view.paneContainerEL.style.transform = translateX(-x)
   }
-
+  __translateSlider () {
+    const currentX =  this.__dimensions.width * this.__selectedId / this.__navItems.length
+    const x = currentX + (this.__startX - this.__moveX) / this.__navItems.length
+    this.__view.sliderEL.style.transform = translateX(x)
+  }
   __updateSlider () {
     const width = this.__dimensions.width / this.__navItems.length
     this.__view.sliderEL.style.transform = translateX(width * this.__selectedId)
@@ -153,12 +162,12 @@ export default class Tab extends HTMLElement {
     this.__dimensions = this.getBoundingClientRect()
   }
 
-  __enablePaneAnimation () {
-    this.__view.paneContainerEL.classList.add('animated')
+  __enablePaneAnimation (element) {
+    this.__view[element].classList.add('animated')
   }
 
-  __disablePaneAnimation () {
-    this.__view.paneContainerEL.classList.remove('animated')
+  __disablePaneAnimation (element) {
+    this.__view[element].classList.remove('animated')
   }
 
   __translatePane () {
@@ -184,14 +193,15 @@ export default class Tab extends HTMLElement {
   }
 
   __updateAnimation () {
+    this.__translateSlider()
     this.__translatePane()
   }
 
-  __allocateOwnLayer () {
-    this.__view.paneContainerEL.classList.add('transformable')
+  __allocateOwnLayer (element) {
+    this.__view[element].classList.add('transformable')
   }
 
-  __deAllocateOwnLayer () {
-    this.__view.paneContainerEL.classList.remove('transformable')
+  __deAllocateOwnLayer (element) {
+    this.__view[element].classList.remove('transformable')
   }
 }

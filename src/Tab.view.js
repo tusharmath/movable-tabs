@@ -29,7 +29,7 @@ export const createNavList = ({$}) => {
 }
 
 export default ({$}) => {
-  const sliderEL = <div className='slider'></div>
+  const sliderEL = <div className='slider animated'></div>
   const navListEL = createNavList({$})
   const paneContainerEL = createPanelContainer({$})
   const children =

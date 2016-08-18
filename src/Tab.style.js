@@ -34,7 +34,12 @@ export default {
         height: '3px',
         backgroundColor: '#FFF',
         width: 'calc(100%/3)',
-        transition: 'transform 100ms ease-in'
+        '&.animated': {
+          transition: 'transform 100ms ease-in'
+        },
+        '&.transformable': {
+          willChange: 'transform'
+        }
       }
     },
     '& .pane': pane
