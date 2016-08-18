@@ -21,7 +21,6 @@ import inRange from './lib/inRange'
 
 const jss = new Jss(preset())
 const styleSheets = createStyleTag(jss, style)
-
 const getNavItems = R.compose(
   R.map(R.path(['attributes', 'title', 'value'])),
   findChildrenOfType(TabPane)
@@ -55,22 +54,35 @@ export default class Tab extends HTMLElement {
 
   __onTouchStart (ev) {
     this.__startX = touchClientX(ev)
-    this.__disablePaneAnimation()
-    this.__allocateOwnLayer()
+    this.__disablePaneAnimation('paneContainerEL')
+    this.__disablePaneAnimation('sliderEL')
+    this.__allocateOwnLayer('paneContainerEL')
+    this.__allocateOwnLayer('sliderEL')
   }
 
   __onTouchEnd (ev) {
     this.__endX = touchClientX(ev)
     this.__updateSelected()
-    this.__enablePaneAnimation()
+    this.__enablePaneAnimation('paneContainerEL')
+    this.__enablePaneAnimation('sliderEL')
     this.__stopAnimationFrame()
-    this.__deAllocateOwnLayer()
+    this.__deAllocateOwnLayer('paneContainerEL')
+    this.__deAllocateOwnLayer('sliderEL')
   }
 
   __onTouchMove (ev) {
     const clientX = touchClientX(ev)
     this.__moveX = clientX
-    this.__startAnimationFrame()
+    if (this.__isMovable()) {
+      this.__startAnimationFrame()
+    }
+  }
+
+  __isMovable () {
+    const diff = this.__startX - this.__moveX
+    const count = this.__navItems.length
+    const Movable = R.compose(inRange(-1, count), R.add(this.__selectedId), numberSign)
+    return Movable(diff)
   }
 
   __updateSelected () {
@@ -78,13 +90,15 @@ export default class Tab extends HTMLElement {
     const direction = numberSign(diff)
     const selectedId = this.__selectedId + direction
     const threshold = 0.20 * this.__dimensions.width
-    const count = this.__navItems.length
-    if (Math.abs(diff) > threshold && direction !== 0 && inRange(-1, count, selectedId)) {
+    if (Math.abs(diff) > threshold && direction !== 0 && this.__isMovable()) {
+      this.__deactivateSelectedNavItem()
       this.__selectedId = selectedId
       this.__showSelectedPane()
       this.__updateSlider()
+      this.__activateSelectedNavItem()
     } else {
       this.__showSelectedPane()
+      this.__updateSlider()
     }
   }
 
@@ -100,6 +114,12 @@ export default class Tab extends HTMLElement {
     const width = this.__dimensions.width
     const x = width * this.__selectedId
     this.__view.paneContainerEL.style.transform = translateX(-x)
+  }
+
+  __translateSlider () {
+    const currentX = this.__dimensions.width * this.__selectedId / this.__navItems.length
+    const x = currentX + (this.__startX - this.__moveX) / this.__navItems.length
+    this.__view.sliderEL.style.transform = translateX(x)
   }
 
   __updateSlider () {
@@ -153,12 +173,12 @@ export default class Tab extends HTMLElement {
     this.__dimensions = this.getBoundingClientRect()
   }
 
-  __enablePaneAnimation () {
-    this.__view.paneContainerEL.classList.add('animated')
+  __enablePaneAnimation (element) {
+    this.__view[element].classList.add('animated')
   }
 
-  __disablePaneAnimation () {
-    this.__view.paneContainerEL.classList.remove('animated')
+  __disablePaneAnimation (element) {
+    this.__view[element].classList.remove('animated')
   }
 
   __translatePane () {
@@ -184,14 +204,15 @@ export default class Tab extends HTMLElement {
   }
 
   __updateAnimation () {
+    this.__translateSlider()
     this.__translatePane()
   }
 
-  __allocateOwnLayer () {
-    this.__view.paneContainerEL.classList.add('transformable')
+  __allocateOwnLayer (element) {
+    this.__view[element].classList.add('transformable')
   }
 
-  __deAllocateOwnLayer () {
-    this.__view.paneContainerEL.classList.remove('transformable')
+  __deAllocateOwnLayer (element) {
+    this.__view[element].classList.remove('transformable')
   }
 }

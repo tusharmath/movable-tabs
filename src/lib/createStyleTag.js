@@ -3,5 +3,6 @@
  */
 
 'use strict'
+import R from 'ramda'
 
-export default (jss, style) => <style>{jss.createStyleSheet(style, {named: false}).toString()}</style>
+export default R.curry((jss, style) => <style>{jss.createStyleSheet(style, {named: false}).toString()}</style>)

@@ -8,6 +8,12 @@ import * as F from 'flex-jss'
 import pane from './Pane.style'
 
 export default {
+  '.animated': {
+    transition: 'transform 100ms ease-in'
+  },
+  '.transformable': {
+    willChange: 'transform'
+  },
   '.movable-tabs': {
     '& .header': {
       backgroundColor: 'rgb(214, 10, 10)',
@@ -32,9 +38,7 @@ export default {
       },
       '& .slider': {
         height: '3px',
-        backgroundColor: '#FFF',
-        width: 'calc(100%/3)',
-        transition: 'transform 100ms ease-in'
+        backgroundColor: '#FFF'
       }
     },
     '& .pane': pane
