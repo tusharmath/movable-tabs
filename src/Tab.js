@@ -43,7 +43,13 @@ const tearDownElements = R.juxt([
 ])
 const addActive = addClass('active')
 const removeActive = removeClass('active')
-
+const methods = [
+  '__onNavClick',
+  '__onTouchEnd',
+  '__onTouchMove',
+  '__onTouchStart',
+  '__translateElements'
+]
 const getData = R.applySpec({
   __navItems: getNavItems,
   __selectedId: R.always(0),
@@ -53,42 +59,41 @@ const getData = R.applySpec({
   __animationFrame: AnimationFrame.createAF,
   __paneItems: getPaneItems
 })
+const calcResetPaneX = (width, id) => -width * id
+const calcTranslateSliderX = (width, id, count, startX, moveX) => (width * id + startX - moveX) / count
+const calcResetSliderX = (width, count, id) => width / count * id
+const calcTranslatePaneX = (id, width, moveX, startX) => -id * width + moveX - startX
 
 export default class Tab extends HTMLElement {
   static get tagName () {
     return 'x-tab'.toUpperCase()
   }
 
-  __bind () {
-    const methods = [
-      '__onNavClick',
-      '__onTouchEnd',
-      '__onTouchMove',
-      '__onTouchStart',
-      '__updateAnimation'
-    ]
-    bindMethods(this, methods)
+  __bind () { bindMethods(this, methods) }
+
+  get __elements () {
+    const {paneContainerEL, sliderEL} = this.__view
+    return [paneContainerEL, sliderEL]
   }
 
   __onTouchStart (ev) {
     this.__startX = touchClientX(ev)
-    const {paneContainerEL, sliderEL} = this.__view
-    setupElements([paneContainerEL, sliderEL])
+    setupElements(this.__elements)
   }
 
   __onTouchEnd (ev) {
-    const {paneContainerEL, sliderEL} = this.__view
     this.__endX = touchClientX(ev)
     this.__updateSelected()
     AnimationFrame.stopAF(this.__animationFrame)
-    tearDownElements([paneContainerEL, sliderEL])
+    tearDownElements(this.__elements)
+    setTranslateX(this.__view.paneContainerEL, calcResetPaneX(this.__width, this.__selectedId))
+    setTranslateX(this.__view.sliderEL, calcResetSliderX(this.__width, this.__count, this.__selectedId))
   }
 
   __onTouchMove (ev) {
-    const clientX = touchClientX(ev)
-    this.__moveX = clientX
+    this.__moveX = touchClientX(ev)
     if (this.__isMovable()) {
-      AnimationFrame.startAF(this.__animationFrame, this.__updateAnimation)
+      AnimationFrame.startAF(this.__animationFrame, this.__translateElements)
     }
   }
 
@@ -103,42 +108,20 @@ export default class Tab extends HTMLElement {
     const diff = this.__startX - this.__endX
     const direction = numberSign(diff)
     const selectedId = this.__selectedId + direction
-    const threshold = 0.20 * this.__dimensions.width
+    const threshold = 0.20 * this.__width
     if (Math.abs(diff) > threshold && direction !== 0 && this.__isMovable()) {
       removeActive(this.__selectedEL)
       this.__selectedId = selectedId
-      this.__showSelectedPane()
-      this.__updateSlider()
       addActive(this.__selectedEL)
-    } else {
-      this.__showSelectedPane()
-      this.__updateSlider()
     }
   }
 
   __onNavClick (id) {
     removeActive(this.__selectedEL)
     this.__selectedId = id
-    this.__updateSlider()
     addActive(this.__selectedEL)
-    this.__showSelectedPane()
-  }
-
-  __showSelectedPane () {
-    const width = this.__width
-    const x = width * this.__selectedId
-    setTranslateX(this.__view.paneContainerEL, -x)
-  }
-
-  __translateSlider () {
-    const currentX = this.__width * this.__selectedId / this.__count
-    const x = currentX + (this.__startX - this.__moveX) / this.__count
-    setTranslateX(this.__view.sliderEL, x)
-  }
-
-  __updateSlider () {
-    const width = this.__width / this.__count
-    setTranslateX(this.__view.sliderEL, width * this.__selectedId)
+    setTranslateX(this.__view.sliderEL, calcResetSliderX(this.__width, this.__count, this.__selectedId))
+    setTranslateX(this.__view.paneContainerEL, calcResetPaneX(this.__width, this.__selectedId))
   }
 
   get __selectedEL () { return this.__view.navListEL[this.__selectedId] }
@@ -183,14 +166,8 @@ export default class Tab extends HTMLElement {
     this.__dimensions = this.getBoundingClientRect()
   }
 
-  __translatePane () {
-    const currentX = -this.__selectedId * this.__dimensions.width
-    const x = currentX + (this.__moveX - this.__startX)
-    setTranslateX(this.__view.paneContainerEL, x)
-  }
-
-  __updateAnimation () {
-    this.__translateSlider()
-    this.__translatePane()
+  __translateElements () {
+    setTranslateX(this.__view.sliderEL, calcTranslateSliderX(this.__width, this.__selectedId, this.__count, this.__startX, this.__moveX))
+    setTranslateX(this.__view.paneContainerEL, calcTranslatePaneX(this.__selectedId, this.__width, this.__moveX, this.__startX))
   }
 }
