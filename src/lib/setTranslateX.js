@@ -6,4 +6,4 @@ import * as R from 'ramda'
 
 'use strict'
 
-export default R.curry((el, x) => el.style.transform = translateX(x))
+export default R.curry((el, x) => (el.style.transform = translateX(x)))
