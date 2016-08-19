@@ -33,7 +33,7 @@ export default ({$}) => {
   const navListEL = createNavList({$})
   const paneContainerEL = createPanelContainer({$})
   const children =
-    <div className='movable-tabs'>
+    <div>
       <div className='header'>
         <ul className='nav'>{navListEL}</ul>
         {sliderEL}
