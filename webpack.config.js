@@ -5,7 +5,7 @@
 const webpack = require('webpack')
 
 module.exports = {
-  entry: ['./src/main.js'],
+  entry: ['./src/app.js'],
   devServer: {
     port: 4444
   },
