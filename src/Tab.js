@@ -14,10 +14,14 @@ import * as R from 'ramda'
 import createStyleTag from './lib/createStyleTag'
 import bindMethods from './lib/bindMethods'
 import wrapElements from './lib/wrapElements'
-import translateX from './lib/translateX'
 import touchClientX from './lib/touchClientX'
 import numberSign from './lib/numberSign'
 import inRange from './lib/inRange'
+import removeClass from './lib/removeClass'
+import AnimationFrame from './lib/AnimationFrame'
+import addClass from './lib/addClass'
+import setTranslateX from './lib/setTranslateX'
+import toBetweenRange from './lib/toBetweenRange'
 
 const jss = new Jss(preset())
 const styleSheets = createStyleTag(jss, style)
@@ -25,117 +29,107 @@ const getNavItems = R.compose(
   R.map(R.path(['attributes', 'title', 'value'])),
   findChildrenOfType(TabPane)
 )
-
 const getPaneItems = R.compose(
   R.map(wrapElements('.pane-item')),
   R.pluck('children'),
   findChildrenOfType(TabPane)
 )
-
+const setupElements = R.juxt([
+  R.forEach(addClass('transformable')),
+  R.forEach(removeClass('animated'))
+])
+const tearDownElements = R.juxt([
+  R.forEach(removeClass('transformable')),
+  R.forEach(addClass('animated'))
+])
+const addActive = addClass('active')
+const removeActive = removeClass('active')
+const methods = [
+  '__onNavClick',
+  '__onTouchEnd',
+  '__onTouchMove',
+  '__onTouchStart'
+]
 const getData = R.applySpec({
   __navItems: getNavItems,
-  __selectedId: R.always(0),
-  __startX: R.always(null),
-  __endX: R.always(null),
-  __moveX: R.always(null),
-  __animationFrame: R.always(null),
+  selected: R.always(0),
+  startX: R.always(0),
+  moveX: R.always(0),
+  __animationFrame: AnimationFrame.createAF,
   __paneItems: getPaneItems
 })
+const calcResetPaneX = ({width, selected}) => -width * selected
+const calcTranslateSliderX = ({width, selected, count, startX, moveX}) => (width * selected + startX - moveX) / count
+const calcResetSliderX = ({width, count, selected}) => width / count * selected
+const calcTranslatePaneX = ({selected, width, moveX, startX}) => -selected * width + moveX - startX
+const isMovable = ({startX, moveX, selected, count, width}) => {
+  const currentX = width * selected + startX - moveX
+  return inRange(0, width * (count - 1), currentX)
+}
+const getCurrentSelectedNav = ({startX, endX, selected, width, count}) => {
+  const diff = startX - endX
+  const direction = numberSign(diff)
+  const newSelected = toBetweenRange(0, count - 1, selected + direction)
+  const threshold = 0.20 * width
+  return Math.abs(diff) > threshold ? newSelected : selected
+}
 
 export default class Tab extends HTMLElement {
   static get tagName () {
     return 'x-tab'.toUpperCase()
   }
 
-  __bind () {
-    const methods = ['__onNavClick', '__onTouchStart', '__onTouchMove', '__onTouchEnd']
-    bindMethods(this, methods)
+  __bind () { bindMethods(this, methods) }
+
+  get __elements () {
+    const {paneContainerEL, sliderEL} = this.__view
+    return [paneContainerEL, sliderEL]
+  }
+
+  __switchNav (selectedId) {
+    if (this.selected === selectedId) return
+    removeActive(this.__selectedEL)
+    this.selected = selectedId
+    addActive(this.__selectedEL)
   }
 
   __onTouchStart (ev) {
-    this.__startX = touchClientX(ev)
-    this.__disablePaneAnimation('paneContainerEL')
-    this.__disablePaneAnimation('sliderEL')
-    this.__allocateOwnLayer('paneContainerEL')
-    this.__allocateOwnLayer('sliderEL')
+    this.startX = touchClientX(ev)
+    setupElements(this.__elements)
   }
 
   __onTouchEnd (ev) {
-    this.__endX = touchClientX(ev)
-    this.__updateSelected()
-    this.__enablePaneAnimation('paneContainerEL')
-    this.__enablePaneAnimation('sliderEL')
-    this.__stopAnimationFrame()
-    this.__deAllocateOwnLayer('paneContainerEL')
-    this.__deAllocateOwnLayer('sliderEL')
+    this.endX = touchClientX(ev)
+    this.__switchNav(getCurrentSelectedNav(this))
+    AnimationFrame.stopAF(this.__animationFrame)
+    tearDownElements(this.__elements)
+    setTranslateX(this.__view.paneContainerEL, calcResetPaneX(this))
+    setTranslateX(this.__view.sliderEL, calcResetSliderX(this))
   }
 
   __onTouchMove (ev) {
-    const clientX = touchClientX(ev)
-    this.__moveX = clientX
-    if (this.__isMovable()) {
-      this.__startAnimationFrame()
-    }
-  }
-
-  __isMovable () {
-    const diff = this.__startX - this.__moveX
-    const count = this.__navItems.length
-    const Movable = R.compose(inRange(-1, count), R.add(this.__selectedId), numberSign)
-    return Movable(diff)
-  }
-
-  __updateSelected () {
-    const diff = this.__startX - this.__endX
-    const direction = numberSign(diff)
-    const selectedId = this.__selectedId + direction
-    const threshold = 0.20 * this.__dimensions.width
-    if (Math.abs(diff) > threshold && direction !== 0 && this.__isMovable()) {
-      this.__deactivateSelectedNavItem()
-      this.__selectedId = selectedId
-      this.__showSelectedPane()
-      this.__updateSlider()
-      this.__activateSelectedNavItem()
-    } else {
-      this.__showSelectedPane()
-      this.__updateSlider()
+    const moveX = touchClientX(ev)
+    const {startX, selected, count, width} = this
+    if (isMovable({startX, moveX, selected, count, width})) {
+      this.moveX = moveX
+      AnimationFrame.startAF(this.__animationFrame, () => {
+        setTranslateX(this.__view.sliderEL, calcTranslateSliderX(this))
+        setTranslateX(this.__view.paneContainerEL, calcTranslatePaneX(this))
+      })
     }
   }
 
   __onNavClick (id) {
-    this.__deactivateSelectedNavItem()
-    this.__selectedId = id
-    this.__updateSlider()
-    this.__activateSelectedNavItem()
-    this.__showSelectedPane()
+    this.__switchNav(id)
+    setTranslateX(this.__view.sliderEL, calcResetSliderX(this))
+    setTranslateX(this.__view.paneContainerEL, calcResetPaneX(this))
   }
 
-  __showSelectedPane () {
-    const width = this.__dimensions.width
-    const x = width * this.__selectedId
-    this.__view.paneContainerEL.style.transform = translateX(-x)
-  }
+  get __selectedEL () { return this.__view.navListEL[this.selected] }
 
-  __translateSlider () {
-    const currentX = this.__dimensions.width * this.__selectedId / this.__navItems.length
-    const x = currentX + (this.__startX - this.__moveX) / this.__navItems.length
-    this.__view.sliderEL.style.transform = translateX(x)
-  }
+  get width () { return this.__dimensions.width }
 
-  __updateSlider () {
-    const width = this.__dimensions.width / this.__navItems.length
-    this.__view.sliderEL.style.transform = translateX(width * this.__selectedId)
-  }
-
-  __deactivateSelectedNavItem () {
-    const el = this.__view.navListEL[this.__selectedId]
-    el.classList.remove('active')
-  }
-
-  __activateSelectedNavItem () {
-    const el = this.__view.navListEL[this.__selectedId]
-    el.classList.add('active')
-  }
+  get count () { return this.__navItems.length }
 
   createdCallback () {
     /**
@@ -171,48 +165,5 @@ export default class Tab extends HTMLElement {
      * @private
      */
     this.__dimensions = this.getBoundingClientRect()
-  }
-
-  __enablePaneAnimation (element) {
-    this.__view[element].classList.add('animated')
-  }
-
-  __disablePaneAnimation (element) {
-    this.__view[element].classList.remove('animated')
-  }
-
-  __translatePane () {
-    const currentX = -this.__selectedId * this.__dimensions.width
-    const x = currentX + (this.__moveX - this.__startX)
-    this.__view.paneContainerEL.style.transform = translateX(x)
-  }
-
-  __startAnimationFrame () {
-    if (this.__animationFrame) return
-    const update = () => {
-      this.__animationFrame = requestAnimationFrame(() => {
-        this.__updateAnimation()
-        update()
-      })
-    }
-    update()
-  }
-
-  __stopAnimationFrame () {
-    cancelAnimationFrame(this.__animationFrame)
-    this.__animationFrame = null
-  }
-
-  __updateAnimation () {
-    this.__translateSlider()
-    this.__translatePane()
-  }
-
-  __allocateOwnLayer (element) {
-    this.__view[element].classList.add('transformable')
-  }
-
-  __deAllocateOwnLayer (element) {
-    this.__view[element].classList.remove('transformable')
   }
 }
