@@ -86,6 +86,6 @@
     "hyperscript": "^2.0.2",
     "jss": "^5.4.0",
     "jss-preset-default": "^0.2.0",
-    "ramda": "^0.22.1"
+    "ramda": "^0.23.0"
   }
 }
